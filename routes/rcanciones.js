@@ -30,7 +30,7 @@ module.exports = function(app, swig, gestorBD) {
 									if (err) {
 										res.send("Error al subir el audio");
 									} else {
-										res.send("Agregada id: "+ id);
+										res.redirect("/publicaciones");
 									}
 								});
 							}
@@ -49,13 +49,27 @@ module.exports = function(app, swig, gestorBD) {
 			criterio = { "nombre" : {$regex : ".*"+req.query.busqueda+".*"} };
 		}
 		
-		gestorBD.obtenerCanciones(criterio, function(canciones) {
+		var pg = parseInt(req.query.pg); // Es String !!! 
+		if ( req.query.pg == null){ // Puede no venir el param 
+			pg = 1; 
+		}
+		
+		
+		gestorBD.obtenerCancionesPg(criterio, pg , function(canciones, total ) {			
 			if (canciones == null) {
 				res.send("Error al listar ");
 			} else {
+				
+				var pgUltima = total/4; 
+				if (total % 4 > 0 ){ // Sobran decimales 
+					pgUltima = pgUltima+1; 
+				}
+				
 				var respuesta = swig.renderFile('views/btienda.html',
 				{
-					canciones : canciones
+					canciones : canciones,
+					pgActual : pg, 
+					pgUltima : pgUltima
 				});
 				res.send(respuesta);
 			}
@@ -152,7 +166,7 @@ module.exports = function(app, swig, gestorBD) {
 					if( result == null){
 						res.send("Error en la modificación");
 					} else {
-						res.send("Modificado");
+						res.redirect("/publicaciones");
 					}
 				});
 			}
@@ -188,5 +202,33 @@ module.exports = function(app, swig, gestorBD) {
 			callback(true); // FIN
 		}
 	}
+	
+	app.get('/cancion/eliminar/:id', function (req, res) {
+		var criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
+		
+		gestorBD.eliminarCancion(criterio,function(canciones){
+			if ( canciones == null ){
+				res.send(respuesta);
+			} else {
+				res.redirect("/publicaciones");
+			}
+		});
+	})
+	
+	app.get('/cancion/comprar/:id', function (req, res) {
+		var cancionId = gestorBD.mongo.ObjectID(req.params.id);
+		var compra = {
+				usuario : req.session.usuario,
+				cancionId : cancionId
+		}
+		
+		gestorBD.insertarCompra(compra ,function(idCompra){
+			if ( idCompra == null ){
+				res.send(respuesta);
+			} else {
+				res.redirect("/compras");
+			}
+		});
+	})
 
 };
