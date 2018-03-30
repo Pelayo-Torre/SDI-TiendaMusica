@@ -2,6 +2,15 @@
 var express = require('express');
 var app = express();
 
+var expressSession = require('express-session');
+app.use(expressSession({
+	secret: 'abcdefg',
+	resave: true,
+	saveUninitialized: true
+}));
+
+var crypto = require('crypto');
+
 var fileUpload = require('express-fileupload');
 app.use(fileUpload());
 var mongo = require('mongodb');
@@ -15,16 +24,19 @@ gestorBD.init(app, mongo);
 
 app.use(express.static('public'));
 
-//Variables 
+// Variables
 app.set('port', 8081);
 app.set('db', 'mongodb://admin:sdi@ds247058.mlab.com:47058/tiendamusica')
+app.set('clave','abcdefg');
+app.set('crypto',crypto);
+
+require("./routes/rusuarios.js")(app, swig, gestorBD); // (app, param1, param2,
+														// etc.)
+require("./routes/rcanciones.js")(app, swig, gestorBD); // (app, param1, param2,
+														// etc.)
 
 
-require("./routes/rusuarios.js")(app, swig, gestorBD); // (app, param1, param2, etc.) 
-require("./routes/rcanciones.js")(app, swig, gestorBD); // (app, param1, param2, etc.)
-
-
-//lanzar el servidor
+// lanzar el servidor
 app.listen(app.get('port'), function() {
 	console.log("Servidor activo");
 });
