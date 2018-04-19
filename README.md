@@ -2,15 +2,7 @@
 
 # TiendaMusica
 
-
-
-## Usage
-
-
-
-## Developing
-
-
+Realización de una tienda de música en NODE JS.
 
 ### Tools
 
