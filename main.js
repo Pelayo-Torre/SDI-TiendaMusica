@@ -2,6 +2,9 @@
 var express = require('express');
 var app = express();
 
+var fs = require('fs');
+var https = require('https');
+
 var expressSession = require('express-session');
 app.use(expressSession({
 	secret: 'abcdefg',
@@ -100,7 +103,7 @@ app.use(express.static('public'));
 
 // Variables
 app.set('port', 8081);
-app.set('db', 'mongodb://admin:sdi@ds247058.mlab.com:47058/tiendamusica')
+app.set('db', 'mongodb://admin:sdi@ds247058.mlab.com:47058/tiendamusica');
 app.set('clave','abcdefg');
 app.set('crypto',crypto);
 
@@ -122,6 +125,14 @@ app.use( function (err, req, res, next ) {
 
 
 // lanzar el servidor
-app.listen(app.get('port'), function() {
-	console.log("Servidor activo");
+//app.listen(app.get('port'), function() {
+//	console.log("Servidor activo");
+//});
+
+
+https.createServer({ key: fs.readFileSync('certificates/alice.key'),
+	cert: fs.readFileSync('certificates/alice.crt') 
+	}, app).listen(app.get('port'), function() { 
+		console.log("Servidor activo"); 
 });
+
